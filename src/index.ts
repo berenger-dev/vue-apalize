@@ -1,70 +1,42 @@
 import type { I18n } from 'vue-i18n'
-import type { Router } from 'vue-router'
-
-import { nextTick } from 'vue'
 
 import Apalize from "apalize.js";
 
 let application_id = "";
 
-declare type Config = { i18n: I18n, router: Router, application_id: string };
+declare type Config = { i18n?: I18n, application_id: string };
 declare type TranslationValue = { locale: string; value: string };
 declare type Translation = { key: string, values: TranslationValue[] };
 
-export default function Main(config: Config) {
-    setI18nLanguage(config.i18n);
+export const createApalize = (config: Config) => {
     application_id = config.application_id;
 
-    config.router.beforeEach(async (to, from, next) => {
-        await loadLocaleMessages(config.i18n);
-        setI18nLanguage(config.i18n);
+    return {
+        install: (app) => {
+            const init_mount = app.mount;
+            app.mount = async (containerOrSelector: any) => {
+                const apalize = await Apalize({
+                    application_id: "410c740f-2357-4c52-ad8e-2eb4b4b04bf2",
+                });
 
-        return next();
-    });
+                const translations = convertToVueI18n(apalize.translations);
 
-    // extend config.i18n.global.t function
-    const t = config.i18n.global.t;
-    config.i18n.global.t = (key: string, ...values: any[]) => {
-        const translation = t(key, ...values);
-        if (apalize) apalize.translate(key);
+                Object.keys(translations).forEach(locale => {
+                    config.i18n.global.setLocaleMessage(locale, translations[locale]);
+                });
 
-        return translation;
+                const t = config.i18n.global.t;
+                config.i18n.global.t = (key: string, ...values: any[]) => {
+                    const translation = t(key, ...values);
+                    if (apalize) apalize.translate(key);
+
+                    return translation;
+                }
+
+                return init_mount(containerOrSelector);
+            }
+        }
     }
-}
-
-export function setI18nLanguage(i18n: I18n) {
-    const locale = i18n.global.locale.toString();
-
-    const html_element = document?.querySelector('html');
-    if (html_element) {
-        html_element.setAttribute('lang', locale)
-    }
-}
-
-let translations: any;
-
-let apalize: any = null;
-
-const loadApalize = async () => {
-    apalize = await Apalize({
-        application_id: application_id
-    });
-}
-
-export async function loadLocaleMessages(i18n: I18n) {
-    const locale = i18n.global.locale.toString();
-
-    if (!apalize) {
-        await loadApalize();
-    }
-
-    if (!translations) {
-        translations = convertToVueI18n(apalize.translations);
-    }
-
-    i18n.global.setLocaleMessage(locale, translations[locale]);
-
-    return nextTick()
 }
 
 const convertToVueI18n = (translations: Translation[]) => {
