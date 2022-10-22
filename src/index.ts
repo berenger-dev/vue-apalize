@@ -25,7 +25,7 @@ export default function Main(config: Config) {
     config.i18n.global.t = function (key: string, ...args: any[]) {
         if (apalize) apalize.translate(key);
         console.log('test');
-        return this._t(key, ...args);
+        return config.i18n.global.t(key, ...args);
     }
 }
 
