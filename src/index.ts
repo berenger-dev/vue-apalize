@@ -22,10 +22,13 @@ export default function Main(config: Config) {
         return next();
     });
 
-    config.i18n.global.t = function (key: string, ...args: any[]) {
+    // extend config.i18n.global.t function
+    const t = config.i18n.global.t;
+    config.i18n.global.t = (key: string, ...values: any[]) => {
+        const translation = t(key, ...values);
         if (apalize) apalize.translate(key);
-        console.log('test');
-        return config.i18n.global.t(key, ...args);
+
+        return translation;
     }
 }
 
