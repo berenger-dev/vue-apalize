@@ -9,7 +9,7 @@ let application_id = "";
 
 declare type Config = { i18n: I18n, router: Router, application_id: string };
 declare type TranslationValue = { locale: string; value: string };
-declare type Translation  =  { key: string, values: TranslationValue[] };
+declare type Translation = { key: string, values: TranslationValue[] };
 
 export default function Main(config: Config) {
     setI18nLanguage(config.i18n);
@@ -21,6 +21,12 @@ export default function Main(config: Config) {
 
         return next();
     });
+
+    config.i18n.global.t = function (key: string, ...args: any[]) {
+        if (apalize) apalize.translate(key);
+        console.log('test');
+        return this._t(key, ...args);
+    }
 }
 
 export function setI18nLanguage(i18n: I18n) {
@@ -34,15 +40,23 @@ export function setI18nLanguage(i18n: I18n) {
 
 let translations: any;
 
+let apalize: any = null;
+
+const loadApalize = async () => {
+    apalize = await Apalize({
+        application_id: application_id
+    });
+}
+
 export async function loadLocaleMessages(i18n: I18n) {
     const locale = i18n.global.locale.toString();
 
-    if (!translations) {
-        const data = await Apalize({
-            application_id: application_id
-        });
+    if (!apalize) {
+        await loadApalize();
+    }
 
-        translations = convertToVueI18n(data.translations);
+    if (!translations) {
+        translations = convertToVueI18n(apalize.translations);
     }
 
     i18n.global.setLocaleMessage(locale, translations[locale]);
@@ -50,7 +64,7 @@ export async function loadLocaleMessages(i18n: I18n) {
     return nextTick()
 }
 
-const convertToVueI18n = (translations:Translation[]) => {
+const convertToVueI18n = (translations: Translation[]) => {
     const messages: any = {};
 
     translations.forEach(translation => {
