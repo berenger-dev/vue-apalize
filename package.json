@@ -1,6 +1,6 @@
 {
   "name": "vue-apalize",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Apalize integration for Vue 3 with vue-i18n",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

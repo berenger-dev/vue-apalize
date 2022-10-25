@@ -2,21 +2,18 @@ import type { I18n } from 'vue-i18n'
 
 import Apalize from "apalize.js";
 
-let application_id = "";
-
-declare type Config = { i18n?: I18n, application_id: string };
+declare type Config = { i18n?: I18n, application_id: string; host?: string };
 declare type TranslationValue = { locale: string; value: string };
 declare type Translation = { key: string, values: TranslationValue[] };
 
 export const createApalize = (config: Config) => {
-    application_id = config.application_id;
-
     return {
         install: (app) => {
             const init_mount = app.mount;
             app.mount = async (containerOrSelector: any) => {
                 const apalize = await Apalize({
-                    application_id: "410c740f-2357-4c52-ad8e-2eb4b4b04bf2",
+                    application_id: config.application_id,
+                    host: config.host
                 });
 
                 const translations = convertToVueI18n(apalize.translations);
