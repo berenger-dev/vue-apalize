@@ -1,7 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
     "target": "es2015",
+    "module": "CommonJS",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
     "declaration": true,
     "outDir": "./dist"
   },
